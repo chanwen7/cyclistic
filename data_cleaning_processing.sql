@@ -108,3 +108,30 @@ SAVEPOINT check_coord;
 -- Drop unused temporary tables and end transaction
 DROP TABLE bikeshare_temp, bikeshare_temp_2;
 COMMIT;
+
+
+
+/*  Processing of dataset  */
+
+-- Additional columns are added to the dataset to facilitate data analysis
+ALTER TABLE bikeshare_cleaned
+	ADD COLUMN ride_length INTERVAL
+	ADD COLUMN time_of_day TIME
+	ADD COLUMN day_of_week SMALLINT
+	ADD COLUMN month SMALLINT;
+
+UPDATE bikeshare_cleaned
+	SET ride_length = ended_at - started_at;
+
+UPDATE bikeshare_cleaned
+	SET time_of_day = CAST(started_at AS time);
+
+UPDATE bikeshare_cleaned
+	SET day_of_week = EXTRACT(dow FROM started_at);
+	
+UPDATE bikeshare_cleaned
+SET "month" = EXTRACT(month FROM started_at);
+
+-- Temporary table saved as permanent table with cleaned & processed data
+CREATE TABLE bikeshare_data AS (
+	SELECT * FROM bikeshare_cleaned);
