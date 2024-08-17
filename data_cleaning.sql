@@ -44,7 +44,7 @@ WHERE ride_id IS NULL OR rideable_type IS NULL OR started_at IS NULL OR
 
 SAVEPOINT delete_nulls;
 
--- (4) Strip whitespaces and inappropriate punctuation with station names and ids, converting back to varchar type to conserve space
+-- (4) Strip whitespaces and inappropriate punctuation with station names and IDs, converting back to varchar type to conserve space
 CREATE TEMP TABLE IF NOT EXISTS bikeshare_temp_2 AS (
 	SELECT
 		ride_id, rideable_type, started_at, ended_at,
@@ -57,7 +57,7 @@ CREATE TEMP TABLE IF NOT EXISTS bikeshare_temp_2 AS (
 
 SAVEPOINT strip;
 
--- (5a) Checking for abnormal values in rideable_type (identified unknown 'docked_bike', 33303 entries removed, 4240924 left)
+-- (5) Remove abnormal values in rideable_type (identified unknown 'docked_bike', 33303 entries removed, 4240924 left)
 SELECT DISTINCT rideable_type
 FROM bikeshare_temp_2;
 
@@ -66,7 +66,7 @@ WHERE rideable_type = 'docked_bike';
 
 SAVEPOINT format_rideable;
 
--- (5b) Checking for abnormal/repeated station names & ids
+-- (6) Adjust abnormal/repeated station names & IDs
 -- Identified 'Public Rack - ' prefixes in station names that have counterpart without predix (popped out from 21872 entries)
 -- Identified unnecessary '.0' suffixes in station ids (popped out from 41981 entries)
 -- Additionally, changed station names to title-case for consistency.
@@ -88,16 +88,16 @@ CREATE TEMP TABLE IF NOT EXISTS bikeshare_temp_3 AS (
 	
 SAVEPOINT format_station;
 
--- (6a) Remove impossible values of trip ending time (removed 66 entries, left 4240858)
+-- (7) Remove impossible values of trip ending time (removed 66 entries, left 4240858)
 SELECT ended_at - started_at as time_check FROM bikeshare_temp_3
 WHERE ended_at < started_at;
 
 DELETE FROM bikeshare_temp_3
 WHERE ended_at < started_at;
 
-SAVEPOINT check_time;
+SAVEPOINT check_datetime;
 
--- (6b) Remove impossible coordinate values (none removed)
+-- (8) Check impossible coordinate values (none identified)
 SELECT start_lat, start_lng, end_lat, end_lng FROM bikeshare_temp_3
 WHERE
 	ABS(start_lat) > 90 OR ABS(end_lat) > 90 OR
