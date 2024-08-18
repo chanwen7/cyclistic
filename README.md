@@ -76,7 +76,7 @@ PostgreSQL is used to clean and organize the dataset, through the pgAdmin 4 inte
 
 While data cleaning and joining is possible to perform with R, I chose to use this project as an opportunity to practice multiple languages, in both PostgreSQL and R.
 
-The full code from this section can be viewed [here](link to file).
+The full code from this section can be viewed [here](https://github.com/chanwen7/cyclistic/blob/main/data_cleaning_processing.sql).
 
 
 #### Setting up our database
