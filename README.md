@@ -5,7 +5,8 @@ This repo contains my capstone project for the Google Data Analytics Course, whi
 
 In this project, I will be utilizing the Google's process of data analytics to solve a business scenario, of a bike-share company's strategy to convert casual riders into annual members of its bike-share program.
 
-**SQL** and **R** have been chosen as tools used for this project, with this Markdown document as the project report accompanied by a Microsoft PowerPoint slide deck.
+**SQL** and **R** have been chosen as tools used for this project, with this **Markdown document** as the project report.
+
 At a later date, a dashboard extension of the project will be available on **Tableau** as well.
 
 
@@ -32,9 +33,9 @@ The stakeholders for this project include **Lily Moreno**, the director of marke
 Our goal is to convert Cyclistic's casual riders into annual members, thereby ensuring longer-term profits.
 
 We can break this problem down into multiple key questions as follows, serving as guideposts for our data analysis:
-	1. How do annual members and casual riders use Cyclistic bikes differently?
-	2. Why would casual riders buy Cyclistic annual memberships?
-  3. How can Cyclistic use digital media to influence casual riders to become members?
+1. How do annual members and casual riders use Cyclistic bikes differently?
+2. Why would casual riders buy Cyclistic annual memberships?
+3. How can Cyclistic use digital media to influence casual riders to become members?
 
 
 
@@ -42,33 +43,34 @@ We can break this problem down into multiple key questions as follows, serving a
 ### Dataset
 I will be using Cyclistic bike share data from the past 12 months (July 2023 to June 2024) provided by the Google Data Analytics Course. This dataset is in comma-separated value format (.csv), and is emulated from an actual bike-share company operating in Chicago, USA: Lyft Bikes and Scooters, LLC (“Bikeshare”), under the [respective license](https://divvybikes.com/data-license-agreement). Data from each calendar month is stored in its own .csv file.
 
-The raw dataset (.csv) can be viewed [here](https://divvy-tripdata.s3.amazonaws.com/index.html).
+The raw dataset (.csv) can be viewed at the following [link](https://divvy-tripdata.s3.amazonaws.com/index.html).
 
 The dataset contains entries for each trip/ride taken with Cyclistic bicycles.
 
+This pre-cleaned dataset contains a total of 5734381 entries across 12 tables, and includes the following fields:
++ **ride_id**: unique identifier for each entry
++ **rideable_type**: type of bicycle used
++ **started_at**: date & time where ride started
++ **ended_at**: date & time where ride ended
++ **start_station_name**: name of bicycle station at start of the ride
++ **start_station_id**: unique identifier for bicycle station at start of the ride
++ **end_station_name**: name of bicycle station at end of the ride
++ **end_station_id**: unique identifier for bicycle station at end of the ride
++ **start_lat**: latitude of station at start of the ride
++ **start_lng**: longitude of station at start of the ride
++ **end_lat**: latitude of station at end of the ride
++ **end_lng**: longitude of station at end of the ride
++ **member_casual**: indication of whether customer is a Cyclistic annual member or casual rider
 
-This pre-cleaned dataset contains a total of X entries across 12 tables, and includes the following fields:
-Column name	Data type	Column name	Data type
-ride_id	String (unique)	end_station_id	String
-rideable_type	String	start_lat	Float
-started_at	Datetime (DD/MM/YYYY HH:MM:SS)	start_lng	Float
-ended_at	Datetime (DD/MM/YYYY HH:MM:SS)	end_lat	Float
-start_station_name	String	end_lng	Float
-start_station_id	String	member_casual	String
-end_station_name	String		
-(also add description)
-<use below method to put table in markdown format>
-https://www.codecademy.com/resources/docs/markdown/tables
 
 Due to privacy issues, the personal & identifiable information of riders are not used. This means that some important data such as purchase history of individual riders and their demographics cannot be explored in the scope of this project.
 
-
 Using the ROCCC test, we see that the integrity and reliability of data is largely ensured, with the exception of being comprehensive:
-	- **Reliable**: Data is directly scraped from the source, and is reflective of our population.
-	- **Original**: Data has been adapted from the primary source, Divvy.
-	- **Comprehensive**: While all rides have been logged during the selected study period, key information about the demographics and purchase history of riders are absent.
-	- **Current**: Data is current, taken from the latest 12 months available (July 2023 to June 2024), which are within 14 months' time from the initiation of this project on August 2024.
-	- **Cited**: Data has been obtained from a vetted and credible source.
+- **Reliable**: Data is directly scraped from the source, and is reflective of our population.
+- **Original**: Data has been adapted from the primary source, Divvy.
+- **Comprehensive**: While all rides have been logged during the selected study period, key information about the demographics and purchase history of riders are absent.
+- **Current**: Data is current, taken from the latest 12 months available (July 2023 to June 2024), which are within 14 months' time from the initiation of this project on August 2024.
+- **Cited**: Data has been obtained from a vetted and credible source.
 
 
 ### Data cleaning
