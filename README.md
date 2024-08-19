@@ -140,7 +140,8 @@ SAVEPOINT pre_cleaning;
 
 Data cleaning operations are performed in the following order:
 
-1. Renamed "member_casual" column to "customer_type", to better clarify what it contains.
+**1. Renamed "member_casual" column to "customer_type"**
+This renaming operation was performed to make referencing casual riders and annual members more intuitive.
 ```
 ALTER TABLE bikeshare_temp
 	RENAME COLUMN member_casual TO customer_type;
@@ -148,7 +149,7 @@ SAVEPOINT rename_member;
 ```
 
 
-2. Removed duplicates. (211 entries removed, 5734170 entries left)
+**2. Removed duplicates** (211 entries removed, 5734170 entries left)
 
 Repeated ride_ids were identified with the following code:
 ```
@@ -180,7 +181,7 @@ SAVEPOINT delete_dupes;
 ```
 
 
-3. Removed rows with incomplete data (1459943 entries removed, 4274227 entries left)
+**3. Removed rows with incomplete data** (1459943 entries removed, 4274227 entries left)
 
 Incomplete data can lead to lack of comparability, making it difficult for us to identify relationships between data variables. While ideally we should strive to find missing data for these entries, this is not possible for the scope of the project, and it is more viable to remove entries with any null values.
 
@@ -198,7 +199,7 @@ SAVEPOINT delete_nulls;
 ```
 
 
-4. Stripped whitespaces and inappropriate punctuation with station names and IDs
+**4. Stripped whitespaces and inappropriate punctuation with station names and IDs**
 
 This step will allow for proper grouping of bicycle stations during data analysis.
 
@@ -219,7 +220,7 @@ SAVEPOINT strip;
 ```
 
 
-5. Removed abnormal values in "rideable_type". (33303 entries removed, 4240924 left)
+**5. Removed abnormal values in "rideable_type"** (33303 entries removed, 4240924 left)
 
 The 'docked_bike' category was identified under type of bicycle used, which does not actually tell us the type of bicycle being used. All bikes should have been considered docked in the first place. Hence, this value was treated as null and respective entries removed accordingly.
 
@@ -234,7 +235,7 @@ SAVEPOINT format_rideable;
 ```
 
 
-6. Adjusted abnormal/repeated station names & IDs
+**6. Adjusted abnormal/repeated station names & IDs**
 
 There were some odd values identified in the "start_station_name" and "end_station_name" columns, namely station names which began with 'Public Rack - ' prefix that often had similar counterpart values without this prefix. These prefixes were hence removed to ensure proper grouping by station names.
 
@@ -261,7 +262,7 @@ CREATE TEMP TABLE IF NOT EXISTS bikeshare_temp_3 AS (
 SAVEPOINT format_station;
 ```
 
-7. Remove impossible values of trip ending time. (removed 66 entries, left 4240858)
+**7. Remove impossible values of trip ending time** (removed 66 entries, left 4240858)
 
 Trips with "end_date" before "start_date" are impossible, and hence are removed from the database.
 
@@ -276,7 +277,7 @@ SAVEPOINT check_datetime;
 ```
 
 
-8. Checked for impossible coordinate values. (no entries removed)
+**8. Checked for impossible coordinate values** (no entries removed)
 
 Coordinates are bound by certain ranges, ±90 for latitude and ±180 for longitude. Hence, coordinate values under "start_lat", "start_lng", "end_lat", "end_lng" are checked against these ranges to remove impossible values.
 
@@ -337,3 +338,315 @@ CREATE TABLE bikeshare_data AS (
 #### Exporting processed data
 Data from the "bikeshare_data" table is then exported as bikeshare_data.csv, to be analyzed in RStudio.
 
+
+
+## Data analysis
+Data analysis is performed using R, within the RStudio interface. Appropriate R extensions are utilized, namely the tidyverse package for data analysis.
+
+We will be looking at analysis for the following, for both annual members and casual riders, comparing the two groups where appropriate:
+	1. Total trips taken by month, day of week, and start time
+	2. Types of bicycles used
+	3. Length of trips
+	4. Location of stations used
+
+We work with the assumption that our cleaned data represents the overall customer base well (including those omitted from cleaning).
+
+How do annual members and casual riders use Cyclistic bikes differently?
+Why would casual riders buy Cyclistic annual memberships?
+How can Cyclistic use digital media to influence casual riders to become members?
+
+
+##### Setting up the environment
+RStudio is first loaded up with the tidyverse packages, followed by the import of our processed bikeshare_data.csv via the readr.
+
+```
+install.packages(tidyverse)
+library(tidyverse)
+read_csv("<file path>/bikeshare_data.csv")
+```
+
+
+#### Is the casual rider customer base worth converting?
+
+We first count the number of rides by both casual riders and annual members. The code below provides us with a bar chart of the number and percentage of rides by each customer time.
+
+```
+  customer_type_count <- bikeshare %>%
+  group_by(customer_type) %>%
+  summarize(ride_count=n()) %>%
+  mutate(proportion=ride_count/sum(ride_count))
+
+view(customer_type_count)
+
+customer_type_count_bar <- customer_type_count %>%
+  ggplot() + geom_col() + aes(x=customer_type, y=proportion*100, fill=customer_type) +
+  geom_text(aes(label=ride_count), vjust=1.5) + 
+  scale_x_discrete(labels=c("Casual rider", "Annual member")) +
+  theme(legend.position="none") +
+  labs(title="Number of rides by Customer type", x="Customer type", y="Percentage of rides (%)")
+
+customer_type_count_bar
+```
+
+
+Casual riders make up **34.7% (n = 1470287)** of all total rides, while annual members make up **65.3% (n = 2770571)**. This shows that there is indeed a large population Cyclistic can target our marketing efforts to.
+
+If the number of unique casual riders outweigh number of unique annual members, we can also infer annual members are likely to utilize a larger number of rides per person, indicating an opportunity for greater earnings if our large casual rider base can become converted to annual members. This is of course an assumption, given that we are not provided personal rider information in this project.
+
+
+### Analysis of trips over time
+
+Analysis of when bike rides take place provides insights on behavioral patterns of Cyclistic casual riders and annual members. Bike ride data is analyzed across each month, day of the week, and start time of the day.
+
+#### Trips made per month
+
+We break down rides taken each month across both casual riders and annual members, using bar charts to illustrate distribution of rides. Percentage of rides (within each group) are used instead of ride counts, to allow easier side-by-side comparison of both groups.
+```
+## Trips made each month (proportioned within customer type group)
+# Additional column to indicate month with highest ride count also created
+trip_count_month <- bikeshare %>%
+  group_by(month,customer_type) %>%
+  summarize(ride_count=n()) %>%
+  ungroup() %>%
+  group_by(customer_type) %>%
+  mutate(proportion = ride_count/sum(ride_count),
+         top_month = ifelse(ride_count == max(ride_count), TRUE, FALSE),
+         month_letter = month.abb[month])
+
+view(trip_count_month)
+
+# Plots of percentage of rides over month within each customer type
+trip_count_month_subgroup <- trip_count_month %>%
+  ggplot(aes(x=factor(month), y=proportion, fill=customer_type, color=top_month)) +
+  geom_col(position="dodge", linewidth=0.6) + 
+  geom_text(data = filter(trip_count_month, top_month == TRUE),
+            aes(label = month_letter, vjust = -0.5)) +
+  facet_wrap(~customer_type, labeller = as_labeller(c("casual"="Casual rider", "member"="Annual member"))) + 
+  scale_color_manual(values = c("TRUE"="gray30", "FALSE"="transparent")) + 
+  theme(legend.position="none") +
+  labs(title = "Percentage of rides over each month",
+       x="Month", y="Percentage of rides (%) within group")
+  
+trip_count_month_subgroup
+```
+
+
+We see that peak periods are relatively similar between both customer types, with **July** being the most popular month at **15.5%** for rides amongst casual riders, while **August** is the most popular month at **12.7%** for annual members.
+
+Casual riders preference for summer months appear to be more pronounced that that of annual members, with higher peak and lower trough in proportion of rides.
+
+
+#### Trips made each day of the week
+
+Next, we break down rides taken each day of the week across both customer types, using a grouped bar chart to illustrate distribution of rides.
+```
+## Trips made each day of the week, by customer type
+trip_count_dow <- bikeshare %>%
+  group_by(day_of_week, customer_type) %>%
+  summarize(ride_count=n()) %>%
+  ungroup() %>%
+  group_by(customer_type) %>%
+  mutate(proportion=ride_count/sum(ride_count),
+         day_of_week_letter = c('Sun','Mon','Tue','Wed','Thu','Fri','Sat')[day_of_week+1])
+
+view(trip_count_dow)
+
+# Proportion of trips on weekend vs weekday
+trip_count_dow %>%
+  filter(day_of_week %in% c(6,0)) %>% summarize(sum(proportion))
+trip_count_dow %>%
+  filter(day_of_week %in% c(1,2,3,4,5)) %>% summarize(sum(proportion))
+
+# Grouped bar plot showing number of rides over day of the week
+trip_count_dow_chart <- trip_count_dow %>%
+  ggplot(aes(x=fct_reorder(day_of_week_letter, day_of_week), y=ride_count, fill=customer_type)) +
+  geom_col(position="dodge") +
+  scale_y_continuous(labels = scales::comma) +
+  scale_fill_discrete(labels=c("Casual rider", "Annual member")) +
+  labs(title="Number of rides over each day of the week", x="Day of the week", y="Number of rides", fill="Customer type")
+
+trip_count_dow_chart
+```
+
+
+For casual riders, **38.5%** of rides take place over weekends, and **61.5%** over weekdays.
+For annual riders, **24.0%** of rides take place over weekends, and **76.0%** over weekdays.
+
+We see that there's a clear preference for rides over the weekend amongst casual riders, , while annual members prefer riding during the weekdays.
+
+This could indicate a difference in purpose of bike trips between both customer groups, with annual members perhaps using it as a form of commuting between home and workplace, whereas casual riders do so for weekend leisure activities.
+
+
+#### Starting time of trips
+
+Finally, we can analyze the start time of each trip across both customer types.
+```
+## Distribution of start time of rides, by customer type
+# We convert time_of_day into POSIXct format, so that we can better format it within our histogram plot, using scale_x_datetime
+# To calculate proportion, we use computed variables generated by ggplot() such as "..count..", "..panel..". Although modifying the "bikeshare" data frame to group entries by start time of rides per hour is easier, the immense size of our data frame would cause the process to take up too much memory.
+
+bikeshare <- mutate(bikeshare, f_time_of_day = as.POSIXct(time_of_day,format = "%H:%M:%S", tz = "UTC"))
+
+trip_count_time_chart <- bikeshare %>%
+  ggplot(aes(x=f_time_of_day, fill=customer_type,
+             y = ..count..*100/tapply(..count.., ..PANEL.., sum)[..PANEL..])) +
+  geom_histogram(bins=24) +
+  facet_wrap(~customer_type, labeller = as_labeller(c("casual"="Casual rider", "member"="Annual member"))) +
+  scale_y_continuous(labels = scales::comma) + 
+  scale_x_datetime(limits=as.POSIXct(c("1970-01-01 00:00:00", "1970-01-02 00:00:00"), tz="UTC"), date_labels="%H:%M") + 
+  theme(legend.position="none", panel.spacing = unit(0.5,"cm")) + 
+  labs(title="Percentage of rides over start time of ride, up to 3h",
+       x="Time of the day (h)", y="Percentage of rides (%) within group")
+
+trip_count_time_chart
+```
+
+
+We see that amongst all riders, **peak activity occurs around 5-6pm**. This coincides with the end of the workday, where riders are likely to either cycle from workplace to home or to other locations.
+
+However, there's a secondary peak of ride activity only amongst annual members, at **around 8am** in the morning, coinciding with the start of the workday.
+
+This further supports our earlier hypothesis that annual members are likely to depend on bike sharing to commute to and from work. On the other hand, casual riders are at most commute from work to home, choosing to take alternative modes of transport at the start of the day.
+
+
+As we noted earlier that casual riders prefer taking bicycles on weekends, I hence further analyzed these patterns of start time grouped by either weekday trips or weekend trips.
+```
+# We further investigate the start time of rides, over weekdays or weekends.
+trip_count_time_chart_dow <- bikeshare %>%
+  ggplot(aes(x=f_time_of_day, fill=customer_type,
+             y=..count..*100/tapply(..count.., ..PANEL.., sum)[..PANEL..])) +
+  geom_histogram(bins=24) +
+  facet_wrap(~customer_type + case_when(
+    day_of_week %in% c(1,2,3,4,5) ~ "Weekdays",
+    day_of_week %in% c(6,0) ~ "Weekends"
+  ), labeller = labeller(customer_type = c("casual"="Casual rider", "member"="Annual member"))) +
+  scale_y_continuous(labels = scales::comma) + 
+  scale_x_datetime(date_labels="%H:%M") + 
+  theme(legend.position="none", panel.spacing = unit(0.5,"cm")) + 
+  labs(title="Percentage of rides over start time of ride",
+       x="Time of the day (h)", y="Percentage of rides (%) within group")
+
+trip_count_time_chart_dow
+```
+
+
+We see that for weekdays, a smaller proportion do so in the mornings as well. Proportion of the morning group amongst casual riders is roughly half that of annual members, and our previous inference that casual riders generally prefer other modes of transport at the start of the day is still logical.
+
+On weekends, the distribution of rides appear to follow a gentler distribution, with a less pronounced peak that is spread across a larger time period of **12 to 5pm**. This patterns holds for both annual members and casual riders. 
+
+
+### Duration of trips
+
+We can also analyze information about the duration of each ride by customer type. Due to a vast majority of ride durations being shorter, the range of ride durations displayed has been restricted to 0 to 3 hours.
+```
+## Distribution of duration of each trip, by customer type
+# As with time_of_day, we also convert ride_length into POSIXct format, then calculate proportion using ggplot() computed variables in a similar process.
+# Rides above 3 hours only make up a tiny proportion of overall rides, and are hence removed to make the chart easier to read.
+
+bikeshare <- mutate(bikeshare, f_ride_length = as.POSIXct(ride_length,format = "%H:%M:%S", tz = "UTC"))
+
+trip_count_length_chart <- bikeshare %>%
+  filter(ride_length < as.difftime(3, units = "hours")) %>%
+  ggplot(aes(x=f_ride_length, fill=customer_type,
+             y=..count..*100/tapply(..count.., ..PANEL.., sum)[..PANEL..])) +
+  geom_histogram(bins=12) +
+  facet_wrap(~customer_type, labeller = as_labeller(c("casual"="Casual rider", "member"="Annual member"))) +
+  scale_y_continuous(labels = scales::comma) + 
+  scale_x_datetime(date_labels="%H:%M") + 
+  theme(legend.position="none", panel.spacing = unit(0.5,"cm")) + 
+  labs(title="Percentage of rides over ride duration",
+       subtitle="Up to 3 hours",
+       x="Duration of ride (h)", y="Percentage of rides (%) within group")
+
+trip_count_length_chart
+```
+
+
+We see that regardless of customer type, a vast majority of customers prefer to take short rides under 1 hour.
+
+However, the chart for casual riders appear to have a longer tail than that of annual members, where more casual riders prefer rides of around 30 minutes to 3 hours in length.
+
+
+For the casual rider group, I further investigated ride duration over weekdays and weekends, excluding short rides under 30 minutes. This is an attempt to find out whether longer trip length is related to riding on weekends, where we can further make an inference of casual riders preferring cycling as a weekend leisure activity.
+```
+# We further investigate breakdown of ride duration over day of week, for casual riders.
+# Durations under 30 minutes have been omitted.
+trip_count_length_chart_casual <- bikeshare %>%
+  filter(customer_type == "casual", ride_length < as.difftime(3, units = "hours")) %>%
+  ggplot(aes(x=f_ride_length, fill=customer_type,
+             y=..count..*100/tapply(..count.., ..PANEL.., sum)[..PANEL..])) +
+  geom_histogram(bins=10) +
+  facet_wrap(~case_when(
+    day_of_week %in% c(1,2,3,4,5) ~ "Weekdays",
+    day_of_week %in% c(6,0) ~ "Weekends"
+  )) +
+  scale_y_continuous(labels = scales::comma) + 
+  scale_x_datetime(limits=as.POSIXct(c("1970-01-01 00:30:00", "1970-01-01 03:00:00"), tz="UTC"), date_labels="%H:%M") + 
+  theme(legend.position="none", panel.spacing = unit(0.5,"cm")) + 
+  labs(title="Percentage of rides over duration of ride (casual riders)",
+       subtitle="Between 30 minutes to 3 hours",
+       x="Duration of ride (h)", y="Percentage of rides (%) within group")
+
+trip_count_length_chart_casual
+```
+
+
+Interestingly, we see that distribution of rides (by proportion) over weekdays and weekends for casual riders are similar for ride durations above 30 minutes (and under 3 hours).
+
+This tells us that while casual riders have a greater tendency to cycle over the weekends, they don't necessarily do so for different purposes than on weekdays, at least based on the duration of their rides. There is hence less evidence to support the theory of casual riders preferring weekend cycling as a leisure activity.
+
+An alternative reason for some casual riders preferring longer trips regardless of day of the week, could be that they simply have to commute greater distances, whether for work, leisure, or other daily activities. It might be the reason why they are not annual members in the first place, given that cycling is not the most convenient mode of transport with trips taking longer than they prefer.
+
+The higher rates of cycling on the weekend could be due to an allowance of time for casual riders to more conveniently undertake these longer trips.
+
+
+### Most commonly-used stations
+
+The last category for our data analysis is to look at the most commonly-used bike stations, both at the start and end of each ride.
+```
+## Most common stations rides started at (top 10)
+common_stations_start <- bikeshare %>%
+  filter(customer_type == "casual") %>%
+  group_by(start_station_name) %>%
+  summarize(start_count = n()) %>%
+  arrange(-start_count) %>% 
+  top_n(10) %>%
+  mutate(ranking = seq.int(nrow(common_stations_start)))
+
+common_stations_start_chart <- common_stations_start %>%
+  ggplot(aes(x=start_count, y=fct_reorder(start_station_name, -ranking), fill=start_count)) +
+  geom_col() +
+  theme(legend.position="none", axis.text.y=element_text(angle=15, size=8),
+        axis.title.y=element_blank()) +
+  scale_fill_viridis_c() + 
+  labs(title="Top 10 bike stations by number of rides started",
+       subtitle="For casual riders", x="Number of rides")
+
+common_stations_start_chart
+
+## Most common stations rides ended at (top 10)
+common_stations_end <- bikeshare %>%
+  filter(customer_type == "casual") %>%
+  group_by(end_station_name) %>%
+  summarize(end_count = n()) %>%
+  arrange(-end_count) %>% 
+  top_n(10) %>%
+  mutate(ranking = seq.int(nrow(common_stations_end)))
+
+common_stations_end_chart <- common_stations_end %>%
+  ggplot(aes(x=end_count, y=fct_reorder(end_station_name, -ranking), fill=end_count)) +
+  geom_col() +
+  theme(legend.position="none", axis.text.y=element_text(angle=15, size=8),
+        axis.title.y=element_blank()) +
+  scale_fill_viridis_c() + 
+  labs(title="Top 10 bike stations by number of rides ended",
+       subtitle="For casual riders", x="Number of rides")
+
+common_stations_end_chart
+```
+
+
+Many of these stations are both start and end points, representing the most popular destinations frequented by casual riders.
+
+
+## Findings and Recommendations
