@@ -387,7 +387,7 @@ customer_type_count_bar <- customer_type_count %>%
 
 customer_type_count_bar
 ```
-
+![chart_1](https://github.com/chanwen7/cyclistic/blob/main/charts/1_customer%20type%20count.png)
 
 Casual riders make up **34.7% (n = 1470287)** of all total rides, while annual members make up **65.3% (n = 2770571)**. This shows that there is indeed a large population Cyclistic can target our marketing efforts to.
 
@@ -429,7 +429,7 @@ trip_count_month_subgroup <- trip_count_month %>%
   
 trip_count_month_subgroup
 ```
-
+![chart_2a](https://github.com/chanwen7/cyclistic/blob/main/charts/2a_month%20trips%20facet.png)
 
 We see that peak periods are relatively similar between both customer types, with **July** being the most popular month at **15.5%** for rides amongst casual riders, while **August** is the most popular month at **12.7%** for annual members.
 
@@ -467,7 +467,7 @@ trip_count_dow_chart <- trip_count_dow %>%
 
 trip_count_dow_chart
 ```
-
+![chart_3](https://github.com/chanwen7/cyclistic/blob/main/charts/3_day%20of%20week.png)
 
 For casual riders, **38.5%** of rides take place over weekends, and **61.5%** over weekdays.
 For annual riders, **24.0%** of rides take place over weekends, and **76.0%** over weekdays.
@@ -500,7 +500,7 @@ trip_count_time_chart <- bikeshare %>%
 
 trip_count_time_chart
 ```
-
+![chart_4a](https://github.com/chanwen7/cyclistic/blob/main/charts/4a_start%20time.png)
 
 We see that amongst all riders, **peak activity occurs around 5-6pm**. This coincides with the end of the workday, where riders are likely to either cycle from workplace to home or to other locations.
 
@@ -528,7 +528,7 @@ trip_count_time_chart_dow <- bikeshare %>%
 
 trip_count_time_chart_dow
 ```
-
+![chart_4b](https://github.com/chanwen7/cyclistic/blob/main/charts/4b_start%20time_weekend%20weekday.png)
 
 We see that for weekdays, a smaller proportion do so in the mornings as well. Proportion of the morning group amongst casual riders is roughly half that of annual members, and our previous inference that casual riders generally prefer other modes of transport at the start of the day is still logical.
 
@@ -560,7 +560,7 @@ trip_count_length_chart <- bikeshare %>%
 
 trip_count_length_chart
 ```
-
+![chart_5a](https://github.com/chanwen7/cyclistic/blob/main/charts/5a_ride%20duration.png)
 
 We see that regardless of customer type, a vast majority of customers prefer to take short rides under 1 hour.
 
@@ -589,7 +589,7 @@ trip_count_length_chart_casual <- bikeshare %>%
 
 trip_count_length_chart_casual
 ```
-
+![chart_5b](https://github.com/chanwen7/cyclistic/blob/main/charts/5b_ride%20duration_weekend%20weekday.png)
 
 Interestingly, we see that distribution of rides (by proportion) over weekdays and weekends for casual riders are similar for ride durations above 30 minutes (and under 3 hours).
 
@@ -603,6 +603,8 @@ The higher rates of cycling on the weekend could be due to an allowance of time 
 ### Most commonly-used stations
 
 The last category for our data analysis is to look at the most commonly-used bike stations, both at the start and end of each ride.
+
+Code and diagram for the most common start stations are as follows:
 ```
 ## Most common stations rides started at (top 10)
 common_stations_start <- bikeshare %>%
@@ -623,7 +625,11 @@ common_stations_start_chart <- common_stations_start %>%
        subtitle="For casual riders", x="Number of rides")
 
 common_stations_start_chart
+```
+![chart_6a](https://github.com/chanwen7/cyclistic/blob/main/charts/6a_top%2010%20start%20station.png)
 
+Code and diagram for the most common end stations are as follows:
+```
 ## Most common stations rides ended at (top 10)
 common_stations_end <- bikeshare %>%
   filter(customer_type == "casual") %>%
@@ -644,9 +650,55 @@ common_stations_end_chart <- common_stations_end %>%
 
 common_stations_end_chart
 ```
-
+![chart_6b](https://github.com/chanwen7/cyclistic/blob/main/charts/6b_top%2010%20end%20station.png)
 
 Many of these stations are both start and end points, representing the most popular destinations frequented by casual riders.
 
 
 ## Findings and Recommendations
+
+In our analysis, we found that casual riders made up a sizable portion of Cyclistic's total ride share at 34.7%, whereas annual members made up 65.3%.
+
+We found out that Cyclistic experiences an increase in number of rides during the summer months, with casual ridership peaking in July and annual member ridership peaking in August.
+
+Casual riders tend to prefer riding on the weekends, whereas annual members prefer riding during weekdays. Peak hours for rides generally occur at 5-6pm on weekdays, and 12 to 5pm on weekends, with annual members specifically also riding often in the mornings around 8am on weekdays.
+
+A large majority of trips are short trips under half an hour, although there are a small proportion (5-10%) of casual rides which occur over a longer duration.
+
+Lastly, there are multiple stations who see particularly high utilization by Cyclistic customers as displayed in the graphs above.
+
+With these newfound data-driven insights, we can move forward with designing strategies targeted at converting our casual rider customer base into more regular members of Cyclistic.
+
+#### Strategy 1: Summer advertising campaign
+Cyclistic should double-down on its efforts towards promoting its annual membership beginning from April or May, where we start to see casual ridership increase at least 2-fold from previous months. 
+
+#### Strategy 2: Multiple-tiered pricing model for Cyclistic membership
+Given that Cyclistic ridership peaks at select months of the calendar year, customers might be more inclined to purchase membership over 1 or more months instead of over a year.
+
+We can offer Cyclistic membership at 1-month, 3-months, and 1-year durations, with each subsequent tier providing further discounts over time. The 3-month membership should not be too much cheaper than the 1-year membership, otherwise the 1-year membership will see low adoption rates, given that there are likely some considering only a membership for the popular summer period.
+
+#### Strategy 3: Weekend-only membership
+Given the popularity of the weekends amongst casual riders, we can consider offering a lower-priced membership specifically for rides over the weekend. Annual members are less likely to convert to this option given that their usage rates are higher on the weekdays than weekends, and should stick with the more expensive annual membership.
+
+#### Strategy 4: Peak hour pricing for non-members
+If management believes that we have already captured our casual rider customer base, we can begin to gradually increase prices for peak hours, such as after 5pm on weekdays and 12 to 5pm on weekends. This would translate into greater discounts by proportion for membership holders, and incentivize conversion from casual ridership to member status.
+
+#### Strategy 5: Advertise membership savings to long-duration rides
+This suggestion makes the assumption that Cyclistic's prices increase with longer duration of use. We can create pop-up notifications or send SMS messages to riders whose bike-use duration exceeds a certain threshold such as 1 hour, informing them of increased savings if they purchase Cyclistic membership.
+
+#### Strategy 6: Physical advertisements at popular stations
+Advertisements could be displayed at Cyclistic's most popular bicycle stations, informing users about our new membership plans and discounts. This can also have the additional effect of recruiting brand new customers to the Cyclistic product.
+
+#### Strategy 7: Rent out under-utilized bicycles over winter & spring
+The winter and spring months see the lowest Cyclistic ridership throughout the year, and represent an opportunity cost. Cyclistic can start a longer-term bike-rental service during these periods, to make additional revenue during this downtime.
+
+### Additional considerations
+This project was performed under the limitations of the data made available. In a realistic scenario, there will be more avenue we can and should explore to work towards more complete data, in turn producing a more comprehensive analysis.
+
+Additional useful data to consider include:
++ **Personal particulars** of each rider, and the rides they undertook
++ The **existing pricing model** of Cyclistic, both individual rides and membership details
++ **Climate data** of Chicago, including temperature, humidity, and rainfall
++ **User-submitted feedback** on Cyclistic, including online reviews, relevant social media posts, and even a survey program conducted by Cyclistic
+
+Given additional time, the team could also study the strategies of other successful bike-sharing initiatives across the country, and even those in similar cities worldwide.
