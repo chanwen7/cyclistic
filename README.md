@@ -366,7 +366,7 @@ read_csv("<file path>/bikeshare_data.csv")
 ```
 
 
-#### Is the casual rider customer base worth converting?
+### Is the casual rider customer base worth converting?
 
 We first count the number of rides by both casual riders and annual members. The code below provides us with a bar chart of the number and percentage of rides by each customer time.
 
@@ -398,7 +398,7 @@ If the number of unique casual riders outweigh number of unique annual members, 
 
 Analysis of when bike rides take place provides insights on behavioral patterns of Cyclistic casual riders and annual members. Bike ride data is analyzed across each month, day of the week, and start time of the day.
 
-#### Trips made per month
+### Trips made per month
 
 We break down rides taken each month across both casual riders and annual members, using bar charts to illustrate distribution of rides. Percentage of rides (within each group) are used instead of ride counts, to allow easier side-by-side comparison of both groups.
 ```
@@ -436,7 +436,7 @@ We see that peak periods are relatively similar between both customer types, wit
 Casual riders preference for summer months appear to be more pronounced that that of annual members, with higher peak and lower trough in proportion of rides.
 
 
-#### Trips made each day of the week
+### Trips made each day of the week
 
 Next, we break down rides taken each day of the week across both customer types, using a grouped bar chart to illustrate distribution of rides.
 ```
@@ -477,7 +477,7 @@ We see that there's a clear preference for rides over the weekend amongst casual
 This could indicate a difference in purpose of bike trips between both customer groups, with annual members perhaps using it as a form of commuting between home and workplace, whereas casual riders do so for weekend leisure activities.
 
 
-#### Starting time of trips
+### Starting time of trips
 
 Finally, we can analyze the start time of each trip across both customer types.
 ```
