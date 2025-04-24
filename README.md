@@ -7,7 +7,7 @@ In this project, I will be utilizing the Google's process of data analytics to s
 
 **SQL** and **R** have been chosen as tools used for this project, with this **Markdown document** as the project report.
 
-At a later date, a dashboard extension of the project will be available on **Tableau** as well.
+Subsequently, a **Python** version of the code will be created.
 
 
 
