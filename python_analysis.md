@@ -3,7 +3,7 @@
 The rest of the report is available at the following [link](https://github.com/chanwen7/cyclistic/blob/main/README.md).
 
 ## Data analysis
-Data analysis is performed using R, within the RStudio interface. Appropriate R extensions are utilized, namely the tidyverse package for data analysis.
+Python 3.13 is utilized for data analysis, using the PyCharm 2025.1 interface.
 
 We will be looking at analysis for the following, for both annual members and casual riders, comparing the two groups where appropriate:
 	1. Total trips taken by month, day of week, and start time
@@ -19,7 +19,7 @@ How can Cyclistic use digital media to influence casual riders to become members
 
 
 ##### Setting up the environment
-Python 3.13 is utilized for data analysis, using the PyCharm 2025.1 interface.
+
 Packages used includes Pandas, Matplotlib (pyplot), and Seaborn.
 Cleaned data  was imported via Pandas into a dataframe.
 ```
