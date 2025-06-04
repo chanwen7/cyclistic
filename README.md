@@ -311,29 +311,29 @@ To facilitate data analysis, we further added columns to the temporary table cre
 This includes "ride_length" describing length of each trip/ride, "time_of_day" describing time which rides started, "day_of_week" describing which day of the week rides took place, and "month" describing which month rides took place.
 
 ```
-ALTER TABLE bikeshare_cleaned
-	ADD COLUMN ride_length INTERVAL
-	ADD COLUMN time_of_day TIME
-	ADD COLUMN day_of_week SMALLINT
+ALTER TABLE bikeshare_temp_3
+	ADD COLUMN ride_length INTERVAL,
+	ADD COLUMN time_of_day TIME,
+	ADD COLUMN day_of_week SMALLINT,
 	ADD COLUMN month SMALLINT;
 	
-UPDATE bikeshare_cleaned
+UPDATE bikeshare_temp_3
 	SET ride_length = ended_at - started_at;
 
-UPDATE bikeshare_cleaned
+UPDATE bikeshare_temp_3
 	SET time_of_day = CAST(started_at AS time);
 
-UPDATE bikeshare_cleaned
+UPDATE bikeshare_temp_3
 	SET day_of_week = EXTRACT(dow FROM started_at);
 	
-UPDATE bikeshare_cleaned
+UPDATE bikeshare_temp_3
 	SET "month" = EXTRACT(month FROM started_at);
 ```
 
 Lastly, we save the processed temporary table into a finalized table for data analysis.
 ```
-CREATE TABLE bikeshare_data AS (
-	SELECT * FROM bikeshare_cleaned);
+CREATE TABLE IF NOT EXISTS bikeshare_data AS (
+	SELECT * FROM bikeshare_temp_3);
 ```
 
 
