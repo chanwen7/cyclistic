@@ -259,7 +259,7 @@ CREATE TEMP TABLE IF NOT EXISTS bikeshare_temp_3 AS (
 		INITCAP(REPLACE(end_station_name, 'Public Rack - ', ''))::VARCHAR as end_station_name,
 		REPLACE(end_station_id, '.0', '')::VARCHAR as end_station_id,
 		start_lat, start_lng, end_lat, end_lng, customer_type
-	FROM bikeshare_temp_2)
+	FROM bikeshare_temp_2);
 	
 SAVEPOINT format_station;
 ```
